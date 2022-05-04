@@ -2,7 +2,7 @@
 
 from collections import deque
 """
-# 1 вариант (не честный)
+# 1 вариант (нечестный)
 
 class HexNum:
     __value:deque
@@ -36,15 +36,21 @@ print("prod is ", f_num * s_num)
 
 # """
 
+#"""
 # 2 вариант
-from numpy import prod
 
+# Данный метод решение работает на hex bin dec oct. Достаточно "оградить" NUM_BASE до нужной системы
+# hex -> полный список
+# oct -> 0 .. 8
+# dec -> 0 .. 9
+# bin -> 0 and 1
 
-NUM_BASE = ["0", "1" , "2", "3", "4", "5", "6", "7", "8", "9"] #, "A", "B", "C", "D", "E", "F"]
+NUM_BASE = ["0", "1" , "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
 BASE_LEN = len(NUM_BASE)
 
 ################################################################################
 def num_hex_sum(*nums):
+    # сложение единичных эленентов 
     raw_sum = sum(map(NUM_BASE.index, nums))
     answ = []
     norm = raw_sum % BASE_LEN
@@ -61,6 +67,7 @@ def num_hex_sum(*nums):
     return answ
 ################################################################################
 def num_hex_prod(*nums):
+    # умножение единичных эленентов 
     raw_prod = 1
     for number in nums:
         raw_prod *= NUM_BASE.index(number) 
@@ -80,12 +87,14 @@ def num_hex_prod(*nums):
     return answ
 ################################################################################
 def int_to_hex(num:int) -> list:
+    # перевод числа в NUM_BASE основание
     if num < BASE_LEN:
         return NUM_BASE[num]
     return [(int_to_hex(num // BASE_LEN))] + [(NUM_BASE[num % BASE_LEN])]
 
 ################################################################################
 def hex_sum(first : deque, second : deque):
+    # сложение двух чисел
     over = ["0"]
     answ = deque()
     tmp_first = first.copy()
@@ -113,31 +122,36 @@ def hex_sum(first : deque, second : deque):
     return answ
 ################################################################################
 def hex_prod(fist : deque, second : deque):
-    answ = deque()
+    # умножение двух чисел
+    answ = deque("0")
 
     if len(fist) < len(second):
         tmp_f, tmp_s = second.copy(), fist.copy()
     else:
         tmp_f, tmp_s = fist.copy(), second.copy()
-    
-    over = deque("0")
-    pre_sum = deque()
    
     tmp_f.reverse()
     tmp_s.reverse()
 
-    for i,f_num in enumerate(tmp_f):
-        pre_sum.append(deque())
-        for s_num in tmp_s:
+    row_sum = deque("0")
+    for prod_offset, f_num in enumerate(tmp_f):
+        row_sum = deque("0")
+
+        for row_offset,s_num in enumerate(tmp_s):
             
-            raw_prod = hex_sum(over, deque(num_hex_prod(f_num, s_num)))
-            print(raw_prod[0], raw_prod[1], over)
-            over = hex_sum( deque(raw_prod[0]), over)
-            answ.appendleft(raw_prod[1])
-    
+            tmp_prod = num_hex_prod(f_num, s_num)
+            tmp_prod.extend("0" * row_offset)
+            row_sum = hex_sum(row_sum, deque(tmp_prod))
+
+            #print(f_num, "*", s_num,  tmp_prod, row_sum)
+       
+        row_sum.extend("0" * prod_offset)
+        answ = hex_sum(row_sum, answ)     
+
     return answ
 ################################################################################
 def hex_crazy_prod(fist:deque, second: deque):
+    # реализация умножение через многократное сложение
     if len(fist) < len(second):
         step = second
         end = fist
@@ -154,3 +168,14 @@ def hex_crazy_prod(fist:deque, second: deque):
     return prod
 ################################################################################
 
+first = deque(input("input first number in hex: ").upper())
+second = deque(input("input second number in hex: ").upper())
+
+first_lst = list(first)
+second_lst = list(second)
+
+print(first_lst, "+", second_lst, "=", list(hex_sum(first, second)))
+print(first_lst, "*", second_lst, "=", list(hex_prod(first, second)))
+print(first_lst, "*", second_lst, "=", list(hex_crazy_prod(first, second)))
+
+# """
